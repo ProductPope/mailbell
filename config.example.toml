@@ -1,0 +1,60 @@
+# mailbell configuration
+# Copy this file to config.toml and fill in your details.
+# config.toml is in .gitignore, so your settings never end up on GitHub.
+
+[imap]
+# Gmail: imap.gmail.com   Outlook/Hotmail: outlook.office365.com   WP: imap.wp.pl   Onet: imap.poczta.onet.pl
+host = "imap.gmail.com"
+port = 993
+user = "you@gmail.com"
+folder = "INBOX"
+# Better: leave this out and set the MAILBELL_PASSWORD environment variable instead.
+# For Gmail you need an "app password" (Google Account > Security > App passwords),
+# not your normal password.
+# password = ""
+
+[nimble]
+url = "http://localhost:11434/v1/systemone"
+model = "nimble"
+# Long emails are cut to this many characters (Nimble reads up to about 8000 tokens).
+max_body_chars = 4000
+
+[rules]
+# Describe in plain words what "important" means to YOU. This is the main knob.
+# Write it in English (the model was trained mostly in English), but the emails
+# themselves can be in Polish or any other language.
+important = """
+Is this email important enough that the recipient should look at it right now?
+Important: a real person writing directly to the recipient and expecting a reply,
+deadlines, payments due, security alerts, anything from family or close colleagues.
+Not important: newsletters, marketing, promotions, automated notifications, receipts.
+"""
+
+# How sure the model must be (0 to 1) before it rings. Higher = fewer, surer alerts.
+threshold = 0.7
+
+# Always ring for these senders (any part of the address or name works).
+vip_senders = []        # e.g. ["boss@company.com", "@school.edu.pl"]
+
+# Never ring for these senders, the model isn't even asked.
+ignore_senders = []     # e.g. ["noreply@", "newsletter@"]
+
+# Categories shown in the log. Leave a description empty ("") if the name says it all.
+[rules.categories]
+personal = "Written by a real person directly to the recipient"
+work = "Work or business matter that needs attention"
+finance = "Invoices, payments, bank or tax matters"
+security = "Login alerts, password resets, account security"
+newsletter = "Newsletters, blog digests, mailing lists"
+promotion = "Marketing, sales, discounts, ads"
+notification = "Automated notifications from apps and services"
+other = "None of the above"
+
+[alert]
+# Path to your own sound file (.wav, .mp3, .aiff). Empty = system default sound.
+sound = ""
+desktop_notification = true
+
+[general]
+poll_seconds = 60
+# state_file = "~/.mailbell_state.json"

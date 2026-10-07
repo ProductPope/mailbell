@@ -1,0 +1,8 @@
+config.toml
+.mailbell_state.json
+__pycache__/
+*.egg-info/
+.venv/
+dist/
+build/
+.pytest_cache/
