@@ -3,21 +3,23 @@
 # config.toml is in .gitignore, so your settings never end up on GitHub.
 
 [imap]
-# Gmail: imap.gmail.com   Outlook/Hotmail: outlook.office365.com   WP: imap.wp.pl   Onet: imap.poczta.onet.pl
+# Gmail: imap.gmail.com   iCloud: imap.mail.me.com   WP: imap.wp.pl   Onet: imap.poczta.onet.pl
+# Microsoft 365 / Outlook.com are not supported yet (they require OAuth2 sign-in).
 host = "imap.gmail.com"
 port = 993
 user = "you@gmail.com"
 folder = "INBOX"
-# Better: leave this out and set the MAILBELL_PASSWORD environment variable instead.
-# For Gmail you need an "app password" (Google Account > Security > App passwords),
-# not your normal password.
-# password = ""
+# Don't put your password here. Run `mailbell set-password` to store it in your
+# system's password vault. For Gmail you need an "app password"
+# (Google Account > Security > App passwords), not your normal password.
 
 [nimble]
 url = "http://localhost:11434/v1/systemone"
 model = "nimble"
 # Long emails are cut to this many characters (Nimble reads up to about 8000 tokens).
 max_body_chars = 4000
+# How long Ollama keeps the model in memory after an email ("-1" = always, "" = Ollama default).
+keep_alive = "1h"
 
 [rules]
 # Describe in plain words what "important" means to YOU. This is the main knob.
@@ -33,11 +35,15 @@ Not important: newsletters, marketing, promotions, automated notifications, rece
 # How sure the model must be (0 to 1) before it rings. Higher = fewer, surer alerts.
 threshold = 0.7
 
-# Always ring for these senders (any part of the address or name works).
+# Sender lists match the real email address, never the display name.
+#   "anna@firma.pl"  = exactly this address
+#   "@firma.pl"      = anyone at this domain (and its subdomains)
+
+# Always ring for these senders.
 vip_senders = []        # e.g. ["boss@company.com", "@school.edu.pl"]
 
 # Never ring for these senders, the model isn't even asked.
-ignore_senders = []     # e.g. ["noreply@", "newsletter@"]
+ignore_senders = []     # e.g. ["newsletter@shop.com", "@marketing.example.com"]
 
 # Categories shown in the log. Leave a description empty ("") if the name says it all.
 [rules.categories]
@@ -54,7 +60,11 @@ other = "None of the above"
 # Path to your own sound file (.wav, .mp3, .aiff). Empty = system default sound.
 sound = ""
 desktop_notification = true
+# Ring "just in case" when an email could not be checked after several tries.
+on_failure = true
 
 [general]
 poll_seconds = 60
+# How many times to retry an email that causes an error before skipping it.
+max_attempts = 3
 # state_file = "~/.mailbell_state.json"

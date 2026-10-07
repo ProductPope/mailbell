@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mailbell"
-version = "0.1.0"
+version = "0.2.0"
 description = "Rings a bell when an important email arrives. Runs fully on your computer with the Nimble decision model via Ollama."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["keyring>=24"]
 keywords = ["email", "imap", "ollama", "nimble", "local-ai", "notifications", "classification"]
 classifiers = [
   "Programming Language :: Python :: 3",

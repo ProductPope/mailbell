@@ -42,6 +42,9 @@ class NimbleConfig:
     model: str = "nimble"
     timeout: float = 120.0
     max_body_chars: int = 4000
+    # Keep the model in memory between emails so each one isn't a 9 GB cold start.
+    # "" = Ollama's default (a few minutes), "-1" = forever, e.g. "2h" = two hours.
+    keep_alive: str = "1h"
 
 
 @dataclass
@@ -57,6 +60,9 @@ class RulesConfig:
 class AlertConfig:
     sound: str = ""  # path to a .wav/.mp3/.aiff file; empty = built-in system sound
     desktop_notification: bool = True
+    # Ring "just in case" when an email could not be checked after several tries,
+    # so a broken email never silently hides something important.
+    on_failure: bool = True
 
 
 @dataclass
@@ -66,11 +72,36 @@ class Config:
     rules: RulesConfig = field(default_factory=RulesConfig)
     alert: AlertConfig = field(default_factory=AlertConfig)
     poll_seconds: int = 60
+    max_attempts: int = 3
     state_file: Path = Path.home() / ".mailbell_state.json"
 
 
 class ConfigError(Exception):
     pass
+
+
+KEYCHAIN_SERVICE = "mailbell"
+
+
+def keychain_account(user: str, host: str) -> str:
+    return f"{user}@{host}"
+
+
+def keychain_password(user: str, host: str) -> str:
+    """Read the password from the system keychain (macOS Keychain, Windows
+    Credential Manager, Linux Secret Service). Empty string if unavailable."""
+    try:
+        import keyring
+
+        return keyring.get_password(KEYCHAIN_SERVICE, keychain_account(user, host)) or ""
+    except Exception:
+        return ""
+
+
+def store_keychain_password(user: str, host: str, password: str) -> None:
+    import keyring
+
+    keyring.set_password(KEYCHAIN_SERVICE, keychain_account(user, host), password)
 
 
 def load_config(path: str | Path) -> Config:
@@ -90,12 +121,15 @@ def parse_config(raw: dict) -> Config:
         if not imap_raw.get(key):
             raise ConfigError(f"Missing [imap] {key} in config")
 
-    # Prefer the environment variable so the password never has to sit in a file.
-    password = os.environ.get("MAILBELL_PASSWORD") or imap_raw.get("password", "")
+    password = (
+        os.environ.get("MAILBELL_PASSWORD")
+        or keychain_password(imap_raw["user"], imap_raw["host"])
+        or imap_raw.get("password", "")
+    )
     if not password:
         raise ConfigError(
-            "No mailbox password. Set the MAILBELL_PASSWORD environment variable "
-            "or [imap] password in config (an app password, not your main password)."
+            "No mailbox password found. Run 'mailbell set-password' to store it safely "
+            "in your system keychain (use an app password, not your main password)."
         )
 
     imap = ImapConfig(
@@ -125,6 +159,7 @@ def parse_config(raw: dict) -> Config:
     general = raw.get("general") or {}
     cfg = Config(imap=imap, nimble=nimble, rules=rules, alert=alert)
     cfg.poll_seconds = int(general.get("poll_seconds", cfg.poll_seconds))
+    cfg.max_attempts = max(1, int(general.get("max_attempts", cfg.max_attempts)))
     if general.get("state_file"):
         cfg.state_file = Path(general["state_file"]).expanduser()
     return cfg
