@@ -1,5 +1,10 @@
 # mailbell 🔔
 
+[![tests](https://github.com/ProductPope/mailbell/actions/workflows/tests.yml/badge.svg)](https://github.com/ProductPope/mailbell/actions/workflows/tests.yml)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Runs 100% locally](https://img.shields.io/badge/AI-100%25%20local-purple)
+
 **Rings a bell when an important email arrives. Everything runs on your own computer.**
 
 mailbell checks your inbox every minute, asks a small AI model running locally on your machine
@@ -36,7 +41,7 @@ ollama pull nimble
 **2. Install mailbell**
 
 ```bash
-git clone https://github.com/YOUR-NAME/mailbell.git
+git clone https://github.com/ProductPope/mailbell.git
 cd mailbell
 pip install .
 ```
@@ -117,6 +122,21 @@ No dependencies beyond the Python standard library.
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+## Po polsku
+
+**mailbell** co minutę sprawdza Twoją skrzynkę i pyta lokalny model AI (Nimble w Ollamie), czy nowy mail jest ważny.
+Jeśli tak, odtwarza dźwięk i pokazuje powiadomienie. Treść maili nie opuszcza Twojego komputera.
+
+Szybki start:
+
+1. Zainstaluj [Ollamę](https://ollama.com/download) (0.35 lub nowszą) i uruchom `ollama pull nimble`
+2. `git clone https://github.com/ProductPope/mailbell.git && cd mailbell && pip install .`
+3. Utwórz hasło do aplikacji w swojej poczcie i ustaw je w zmiennej `MAILBELL_PASSWORD`
+4. Skopiuj `config.example.toml` do `config.toml` i wpisz adres skrzynki
+5. `mailbell check`, a potem `mailbell run`
+
+Polecenie opisujące, co jest ważne, najlepiej pisać po angielsku. Same maile mogą być po polsku.
 
 ## License
 
